@@ -19,13 +19,13 @@ public class TxBasicTest {
     BasicService basicService;
 
     @Test
-    void proxyCheck(){
+    void proxyCheck() {
         log.info("app class={}", basicService.getClass());
         Assertions.assertThat(AopUtils.isAopProxy(basicService)).isTrue();
     }
 
     @Test
-    void txTest(){
+    void txTest() {
         basicService.tx();
         basicService.nonTx();
     }
@@ -33,24 +33,24 @@ public class TxBasicTest {
     @TestConfiguration
     static class TxApplyBasicConfig {
         @Bean
-        BasicService basicService(){
+        BasicService basicService() {
             return new BasicService();
         }
     }
 
     @Slf4j
-    static class BasicService{
+    static class BasicService {
 
 
         @Transactional
-        public void tx(){
+        public void tx() {
             log.info("call tx");
             //트랜잭션 존재 여부 확인
             boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();
             log.info("tx active = {}", txActive);
         }
 
-        public void nonTx(){
+        public void nonTx() {
             log.info("call nontx");
             //트랜잭션 존재 여부 확인
             boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();

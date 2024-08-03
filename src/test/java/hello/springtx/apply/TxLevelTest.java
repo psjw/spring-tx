@@ -15,15 +15,15 @@ public class TxLevelTest {
     LevelService service;
 
     @Test
-    void orderTest(){
+    void orderTest() {
         service.write();
         service.read();
     }
 
     @TestConfiguration
-    static class TxLevelConfig{
+    static class TxLevelConfig {
         @Bean
-        LevelService levelService(){
+        LevelService levelService() {
             return new LevelService();
         }
     }
@@ -33,21 +33,21 @@ public class TxLevelTest {
     static class LevelService {
 
         @Transactional(readOnly = false)
-        public void write(){
+        public void write() {
             log.info("call write");
             printTxInfo();
         }
 
-        public void read(){
+        public void read() {
             log.info("call read");
             printTxInfo();
         }
 
-        public void printTxInfo(){
+        public void printTxInfo() {
             boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();
             log.info("tx active={}", txActive);
             boolean readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
-            log.info("tx readOnly={}",readOnly);
+            log.info("tx readOnly={}", readOnly);
         }
 
     }
