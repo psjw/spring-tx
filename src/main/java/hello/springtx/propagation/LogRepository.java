@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -14,7 +15,7 @@ import java.util.Optional;
 public class LogRepository {
     private final EntityManager em;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void save(Log logMessage) {
         log.info("log 저장");
         em.persist(logMessage);
@@ -30,5 +31,16 @@ public class LogRepository {
                 .setParameter("message", message)
                 .getResultList().stream().findAny();
     }
+
+
+    public void save_checkedException(Log logMessage) throws Exception {
+        log.info("log 저장");
+        em.persist(logMessage);
+        if (logMessage.getMessage().contains("로그예외")) {
+            log.info("log 저장시 예외 발생");
+            throw new Exception("예외 발생");
+        }
+    }
+
 
 }

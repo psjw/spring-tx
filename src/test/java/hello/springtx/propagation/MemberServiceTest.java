@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.UnexpectedRollbackException;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +28,7 @@ class MemberServiceTest {
      */
 
     @Test
-    void outerTxOff_success(){
+    void outerTxOff_success() {
         //given
         String username = "outerTxOff_success";
 
@@ -45,7 +47,7 @@ class MemberServiceTest {
      */
 
     @Test
-    void outerTxOff_fail(){
+    void outerTxOff_fail() {
         //given
         String username = "로그예외_outerTxOff_fail";
 
@@ -61,7 +63,6 @@ class MemberServiceTest {
     }
 
 
-
     /**
      * memberService @Transactional: ON
      * memberRepository @Transactional: OFF
@@ -69,7 +70,7 @@ class MemberServiceTest {
      */
 
     @Test
-    void singleTx(){
+    void singleTx() {
         //given
         String username = "outerTxOff_success";
 
@@ -88,7 +89,7 @@ class MemberServiceTest {
      */
 
     @Test
-    void outerTxOn_success(){
+    void outerTxOn_success() {
         //given
         String username = "outerTxOn_success";
 
@@ -105,9 +106,8 @@ class MemberServiceTest {
      * memberRepository @Transactional: ON
      * logRepository @Transactional: ON Exception
      */
-
     @Test
-    void outerTxOn_fail(){
+    void outerTxOn_fail() {
         //given
         String username = "로그예외_outerTxOn_fail";
 
@@ -118,6 +118,44 @@ class MemberServiceTest {
 
         //then : 모든 데이터가 롤백된다.
         Assertions.assertTrue(memberRepository.find(username).isEmpty());
+        Assertions.assertTrue(logRepository.find(username).isEmpty());
+    }
+
+    /**
+     * memberService @Transactional: ON
+     * memberRepository @Transactional: ON
+     * logRepository @Transactional: ON Exception
+     */
+    @Test
+    void recoverException_fail() {
+        //given
+        String username = "로그예외_outerTxOn_fail";
+
+        //when
+        assertThatThrownBy(() -> {
+            memberService.joinV2(username);
+        }).isInstanceOf(UnexpectedRollbackException.class);
+
+        //then : 모든 데이터가 롤백된다.
+        Assertions.assertTrue(memberRepository.find(username).isEmpty());
+        Assertions.assertTrue(logRepository.find(username).isEmpty());
+    }
+
+    /**
+     * memberService @Transactional: ON
+     * memberRepository @Transactional: ON
+     * logRepository @Transactional: ON(REQUIRES_NEW) Exception
+     */
+    @Test
+    void recoverException_success() {
+        //given
+        String username = "로그예외_recoverException_success";
+
+        //when
+        memberService.joinV2(username);
+
+        //then : member 저장, log 롤백
+        Assertions.assertTrue(memberRepository.find(username).isPresent());
         Assertions.assertTrue(logRepository.find(username).isEmpty());
     }
 }
